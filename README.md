@@ -46,3 +46,35 @@ Etapa 01
     desktop
 
 - prazos e expectativas
+
+----------------05/08----------------
+
+declarar todos os requisitos funcionais do sistema proposto
+    - permitir o cadastro de peças no depósito
+    - manter um histórico de entrada e saída de peças do depósito
+    - alertar o usuário quando um estoque de peças estiver com poucas peças no depósito
+    - permitir o cadastro de funcionários
+    - ter registro de entrada e saída dos funcionários
+    - gerar relatórios por período
+    - permitir o cadastro de veículos como caminhões
+    - registrar entrada e saída de caminhões 
+    - realizar o cálculo de sacas
+    - conter os registros de umidade antes e depois da secagem
+    - registro de plantio (data, area, cultura)
+    - previsão estimada de colheita
+    - controle de insumos usados
+    - controle de gado
+    - controle de gastos com manutenção, peças, mão de obra
+    - receita estimada por safra
+    - gráficos de lucro/prejuízo
+
+declarar todos os requisitos não funcionais que consideramos importantes
+    - banco de dados
+    - sistema de desktop para o dispositivo principal de controle
+    - uso mínimo de internet
+    - plataforma intuitiva e de fácil compreensão
+
+desenhar o esboço da tela principal do sistema
+
+definir os atores do sistema
+    - produtores rurais de média/larga escala encarregados de administrar seus terrenos
