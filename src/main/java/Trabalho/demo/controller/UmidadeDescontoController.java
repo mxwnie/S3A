@@ -26,37 +26,37 @@ public class UmidadeDescontoController {
 
     @GetMapping("/romaneio/calcular")
     public CalculoPesoResponse calcularRomaneio(
-            @RequestParam double pesoBruto,
-            @RequestParam double tara,
-            @RequestParam double umidade) {
-
-        BigDecimal pesoBrutoBD = BigDecimal.valueOf(pesoBruto);
-        BigDecimal taraBD = BigDecimal.valueOf(tara);
+            @RequestParam BigDecimal pesoBruto,
+            @RequestParam BigDecimal tara,
+            @RequestParam BigDecimal umidade) {
 
         // 1. Calcular Peso Líquido
-        BigDecimal pesoLiquido = pesoBrutoBD.subtract(taraBD);
+        BigDecimal pesoLiquido = pesoBruto.subtract(tara);
 
         // 2. Obter o percentual de desconto de umidade
-        BigDecimal percentualDesconto = service.calcularDesconto(umidade);
+        BigDecimal percentualDesconto = service.calcularDesconto(umidade.doubleValue());
 
         // 3. Calcular o peso do desconto em KG
-        BigDecimal descontoEmKg = pesoLiquido.multiply(percentualDesconto.divide(BigDecimal.valueOf(100)));
+        BigDecimal descontoEmKg = pesoLiquido.multiply(
+                percentualDesconto.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+        );
 
         // 4. Calcular o peso final a pagar
         BigDecimal pesoFinal = pesoLiquido.subtract(descontoEmKg);
 
         // 5. Montar a resposta completa
         CalculoPesoResponse response = new CalculoPesoResponse();
-        response.setPesoBruto(pesoBrutoBD.setScale(2, RoundingMode.HALF_UP));
-        response.setTara(taraBD.setScale(2, RoundingMode.HALF_UP));
+        response.setPesoBruto(pesoBruto.setScale(2, RoundingMode.HALF_UP));
+        response.setTara(tara.setScale(2, RoundingMode.HALF_UP));
         response.setPesoLiquido(pesoLiquido.setScale(2, RoundingMode.HALF_UP));
-        response.setUmidadeInformada(umidade);
+        response.setUmidadeInformada(umidade.doubleValue());
         response.setPercentualDescontoAplicado(percentualDesconto.setScale(2, RoundingMode.HALF_UP));
         response.setDescontoEmKg(descontoEmKg.setScale(2, RoundingMode.HALF_UP));
         response.setPesoFinal(pesoFinal.setScale(2, RoundingMode.HALF_UP));
 
         return response;
     }
+
 
     // --- Endpoints Auxiliares ---
 
