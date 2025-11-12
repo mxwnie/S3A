@@ -37,29 +37,30 @@ public class UmidadeDescontoService {
     // --- REGRA DE NEGÓCIO PRINCIPAL ---
 
     /**
-     * Calcula o percentual de desconto com base na umidade, consultando a tabela dinâmica no banco de dados.
+     * Calcula o percentual de desconto com base na umidade, usando uma fórmula por faixas.
      * @param umidadePercentual Umidade do grão (Ex: 15.5).
-     * @return O percentual de desconto (Ex: 4.00) ou 0.00 se não houver regra ou se for <= 14.00.
+     * @return O percentual de desconto calculado.
      */
     public BigDecimal calcularDesconto(double umidadePercentual) {
-        // 1. Prepara a umidade para busca, garantindo precisão com 2 casas decimais.
-        BigDecimal umidadeChave = BigDecimal.valueOf(umidadePercentual)
-                .setScale(2, RoundingMode.HALF_UP);
+        double m = umidadePercentual;
+        double desconto;
 
-        // 2. Regra: Umidade de 14.00% ou menos não tem desconto.
-        if (umidadeChave.compareTo(BigDecimal.valueOf(14.00)) <= 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-
-        // 3. Busca o valor exato no banco de dados
-        Optional<UmidadeDesconto> resultado = repository.findByUmidade(umidadeChave);
-
-        if (resultado.isPresent()) {
-            return resultado.get().getDescontoPercentual();
+        if (m <= 14.0) {
+            desconto = 0.0;
+        } else if (m <= 14.5) {
+            desconto = (m - 14.0) * 3.0;
+        } else if (m <= 25.0) {
+            desconto = 1.5 + (m - 14.5) * 1.5;
+        } else if (m <= 26.0) {
+            desconto = 17.25 + (m - 25.0) * 2.0;
+        } else if (m < 27.0) {
+            desconto = 19.25 + (m - 26.0) * 2.0;
+        } else if (m <= 35.2) {
+            desconto = 22.00 + (m - 27.0) * 3.0;
         } else {
-            // Se o valor exato não for encontrado (ex: 14.51%), retorna 0 e loga o aviso.
-            System.err.println("Aviso: Umidade " + umidadePercentual + "% não possui desconto cadastrado (valor exato não encontrado).");
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            desconto = 46.60 + (m - 35.2) * 5.0;
         }
+
+        return BigDecimal.valueOf(desconto).setScale(2, RoundingMode.HALF_UP);
     }
 }

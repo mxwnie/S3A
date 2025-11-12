@@ -1,15 +1,17 @@
 package Trabalho.demo.controller;
 
+import Trabalho.demo.model.CalculoPesoResponse;
 import Trabalho.demo.model.UmidadeDesconto;
 import Trabalho.demo.service.UmidadeDescontoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tabela-descontos") // Rota de gerenciamento da tabela dinâmica
+@RequestMapping("/api") // Rota base para a API
 @CrossOrigin(
         origins = {"http://127.0.0.1:5500", "http://localhost:5500"},
         allowedHeaders = {"*"},
@@ -20,36 +22,67 @@ public class UmidadeDescontoController {
     @Autowired
     private UmidadeDescontoService service;
 
-    // --- Endpoints para Gerenciamento da Tabela (CRUD) ---
+    // --- Endpoint Principal para o Cálculo do Romaneio ---
 
-    // CREATE (POST /tabela-descontos) - Adiciona uma nova regra (item da tabela)
-    @PostMapping
+    @GetMapping("/romaneio/calcular")
+    public CalculoPesoResponse calcularRomaneio(
+            @RequestParam double pesoBruto,
+            @RequestParam double tara,
+            @RequestParam double umidade) {
+
+        BigDecimal pesoBrutoBD = BigDecimal.valueOf(pesoBruto);
+        BigDecimal taraBD = BigDecimal.valueOf(tara);
+
+        // 1. Calcular Peso Líquido
+        BigDecimal pesoLiquido = pesoBrutoBD.subtract(taraBD);
+
+        // 2. Obter o percentual de desconto de umidade
+        BigDecimal percentualDesconto = service.calcularDesconto(umidade);
+
+        // 3. Calcular o peso do desconto em KG
+        BigDecimal descontoEmKg = pesoLiquido.multiply(percentualDesconto.divide(BigDecimal.valueOf(100)));
+
+        // 4. Calcular o peso final a pagar
+        BigDecimal pesoFinal = pesoLiquido.subtract(descontoEmKg);
+
+        // 5. Montar a resposta completa
+        CalculoPesoResponse response = new CalculoPesoResponse();
+        response.setPesoBruto(pesoBrutoBD.setScale(2, RoundingMode.HALF_UP));
+        response.setTara(taraBD.setScale(2, RoundingMode.HALF_UP));
+        response.setPesoLiquido(pesoLiquido.setScale(2, RoundingMode.HALF_UP));
+        response.setUmidadeInformada(umidade);
+        response.setPercentualDescontoAplicado(percentualDesconto.setScale(2, RoundingMode.HALF_UP));
+        response.setDescontoEmKg(descontoEmKg.setScale(2, RoundingMode.HALF_UP));
+        response.setPesoFinal(pesoFinal.setScale(2, RoundingMode.HALF_UP));
+
+        return response;
+    }
+
+    // --- Endpoints Auxiliares ---
+
+    /**
+     * Endpoint para testar a regra de cálculo de desconto de umidade isoladamente.
+     * Ex: GET http://localhost:6969/api/descontos/calcular-por-umidade/14.50
+     */
+    @GetMapping("/descontos/calcular-por-umidade/{umidade}")
+    public BigDecimal obterDescontoPorUmidade(@PathVariable double umidade) {
+        return service.calcularDesconto(umidade);
+    }
+
+    // --- Endpoints para Gerenciamento da Tabela (se necessário no futuro) ---
+
+    @PostMapping("/descontos/regras")
     public UmidadeDesconto adicionarItemTabela(@RequestBody UmidadeDesconto item){
         return service.salvar(item);
     }
 
-    // READ ALL (GET /tabela-descontos) - Lista todas as regras cadastradas
-    @GetMapping
+    @GetMapping("/descontos/regras")
     public List<UmidadeDesconto> listarTabela(){
         return service.listarTodos();
     }
 
-    // DELETE (DELETE /tabela-descontos/{id}) - Remove uma regra pelo seu ID
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/descontos/regras/{id}")
     public void deletarItemTabela(@PathVariable Long id){
         service.deletar(id);
-    }
-
-    // --- Endpoint para TESTE DA REGRA DE NEGÓCIO ---
-
-    /**
-     * Endpoint para simular a chamada da regra de negócio para obter o desconto.
-     * Ex: GET http://localhost:6969/tabela-descontos/calcular/14.50
-     * @param umidade O percentual de umidade fornecido.
-     * @return O percentual de desconto aplicável.
-     */
-    @GetMapping("/calcular/{umidade}")
-    public BigDecimal obterDescontoPorUmidade(@PathVariable double umidade) {
-        return service.calcularDesconto(umidade);
     }
 }
