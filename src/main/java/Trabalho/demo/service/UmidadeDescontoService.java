@@ -54,7 +54,7 @@ public class UmidadeDescontoService {
         } else if (m <= 26.0) {
             desconto = 17.25 + (m - 25.0) * 2.0;
         } else if (m < 27.0) {
-            desconto = 19.25 + (m - 26.0) * 2.0;
+            desconto = 19.25 + (m - 26.0) * 2.5;
         } else if (m <= 35.2) {
             desconto = 22.00 + (m - 27.0) * 3.0;
         } else {

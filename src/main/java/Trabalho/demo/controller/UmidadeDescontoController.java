@@ -64,7 +64,7 @@ public class UmidadeDescontoController {
      * Endpoint para testar a regra de cálculo de desconto de umidade isoladamente.
      * Ex: GET http://localhost:6969/api/descontos/calcular-por-umidade/14.50
      */
-    @GetMapping("/descontos/calcular-por-umidade/{umidade}")
+    @GetMapping("/descontos/calcular-por-umidade/{umidade:.+}")
     public BigDecimal obterDescontoPorUmidade(@PathVariable double umidade) {
         return service.calcularDesconto(umidade);
     }
